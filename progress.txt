@@ -1,0 +1,21 @@
+# ClubKit Progress Log
+# Each entry records what was done, by whom (human or agent), and key decisions made.
+# This file is the handoff note between sessions.
+
+---
+Date: 2026-05-08
+Issue: #1 - Project scaffolding + multi-tenant schema infrastructure
+Summary: Implemented full multi-tenant infrastructure using django-tenants library (ADR-0003).
+  - Django project in backend/ with settings package (base.py)
+  - tenancy app: Tenant model (TenantMixin), TenantDomain model (DomainMixin), post_delete signal for schema cleanup
+  - users app: CustomUser model (AbstractUser + role field) in TENANT_APPS
+  - PostgreSQL configured with django_tenants backend, TenantSyncRouter, TenantMainMiddleware
+  - Schema provisioning verified: creating Tenant auto-creates schema with all tables
+  - Schema deletion verified: deleting Tenant drops schema (auto_drop_schema + signal)
+  - Next.js frontend scaffolded in frontend/ with Tailwind CSS
+  - 8 tests passing: schema provisioning (3), schema isolation (3), middleware routing (2)
+  - Key decision: used django-tenants instead of custom implementation (ADR-0003)
+  - Key decision: auth in TENANT_APPS (per-tenant Users, no global user table)
+  - Local dev uses *.lvh.me for subdomain routing
+---
+
