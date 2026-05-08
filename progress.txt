@@ -19,3 +19,19 @@ Summary: Implemented full multi-tenant infrastructure using django-tenants libra
   - Local dev uses *.lvh.me for subdomain routing
 ---
 
+---
+Date: 2026-05-08
+Issue: #2 - Tenant Onboarding with Brand Kit
+Summary: Implemented self-service Tenant onboarding flow with Brand Kit.
+  - BrandKit model (OneToOne with Tenant) in public schema: logo, colours, hero image, description, contact info, social links
+  - Onboarding API endpoint (POST /api/onboarding/) creates Tenant + TenantDomain + BrandKit in one request
+  - Subdomain slug validation: lowercase alphanumeric + hyphens, reserved words blocked, uniqueness enforced
+  - Brand Kit retrieve endpoint (GET /api/brand-kit/) for tenant-scoped requests
+  - Brand Kit update endpoint (PATCH /api/brand-kit/update/) restricted to Admins
+  - File uploads via FileField (not ImageField — avoids Pillow dependency for now)
+  - Next.js onboarding wizard: 3-step form (club details, branding, contact info)
+  - 9 tests covering onboarding, slug validation, and brand kit retrieval
+  - Key decision: used FileField instead of ImageField to avoid Pillow dependency
+  - Key decision: BrandKit in public schema (needed for theming before tenant context)
+---
+

@@ -17,6 +17,7 @@ SHARED_APPS = [
     "django_tenants",
     "tenancy",
     "django.contrib.contenttypes",
+    "django.contrib.sessions",
     "django.contrib.staticfiles",
 ]
 
@@ -53,6 +54,7 @@ DATABASE_ROUTERS = ("django_tenants.routers.TenantSyncRouter",)
 MIDDLEWARE = [
     "django_tenants.middleware.main.TenantMainMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -115,6 +117,11 @@ USE_TZ = True
 # --- Static files ---
 
 STATIC_URL = "static/"
+
+# --- Media files (uploads) ---
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # --- Misc ---
 
