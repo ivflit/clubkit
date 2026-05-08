@@ -1,6 +1,7 @@
 set -e
 
-claude --permission-mode acceptEdits "\
+while true; do
+  OUTPUT=$(claude --permission-mode acceptEdits "\
 You are working on the ClubKit project — a multi-tenant SaaS platform for local sports clubs.
 
 Read these files for context:
@@ -13,7 +14,7 @@ Then follow these steps:
 
 1. FETCH ISSUES: Run 'gh issue list --state open --label ready-for-agent --json number,title,body,labels --jq .' to get all open AFK-ready issues. Also run 'gh issue list --state closed --json number,title --jq .' to see what's already done.
 
-2. PICK THE HIGHEST-PRIORITY UNBLOCKED ISSUE: Each issue has a 'Blocked by' section listing dependencies. An issue is unblocked only if ALL its blockers are closed. Among unblocked issues, pick the one YOU judge to be highest priority (foundational work first). Skip issues labelled 'ready-for-human' — those need human review. ONLY WORK ON A SINGLE ISSUE.
+2. PICK THE HIGHEST-PRIORITY UNBLOCKED ISSUE: Each issue has a 'Blocked by' section listing dependencies. An issue is unblocked only if ALL its blockers are closed. Among unblocked issues, pick the one YOU judge to be highest priority (foundational work first). Skip issues labelled 'ready-for-human' — those need human review. ONLY WORK ON A SINGLE ISSUE. If there are NO unblocked ready-for-agent issues, output <promise>COMPLETE</promise> and stop.
 
 3. IMPLEMENT WITH ACCEPTANCE CRITERIA TRACKING: Work through the issue's acceptance criteria one by one. After completing EACH criterion:
    - Tick it on the GitHub issue immediately by editing the issue body (change '- [ ]' to '- [x]' for that criterion)
@@ -43,5 +44,14 @@ Then follow these steps:
 
 9. COMMIT AND PUSH: Stage all changed files and make a git commit with a clear message referencing the issue number (e.g. 'feat: implement tenant schema infrastructure (#1)'). Then push to origin main.
 
-If all open ready-for-agent issues are either blocked or closed, output <promise>COMPLETE</promise>.
-"
+If there are NO unblocked ready-for-agent issues available, output <promise>COMPLETE</promise> and stop.
+")
+
+  # Check if ralph signalled completion
+  if echo "$OUTPUT" | grep -q '<promise>COMPLETE</promise>'; then
+    echo "All unblocked issues complete. Stopping."
+    break
+  fi
+
+  echo "Issue completed. Starting next iteration..."
+done
