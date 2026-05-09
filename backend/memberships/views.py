@@ -2,8 +2,13 @@ from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from .models import MembershipType
-from .serializers import MembershipTypeSerializer, PublicMembershipTypeSerializer
+from .models import Membership, MembershipType
+from .serializers import (
+    MembershipPurchaseSerializer,
+    MembershipSerializer,
+    MembershipTypeSerializer,
+    PublicMembershipTypeSerializer,
+)
 
 
 class IsAdminUser:
@@ -77,3 +82,102 @@ class PublicMembershipTypeListView(generics.ListAPIView):
 
     def get_queryset(self):
         return MembershipType.objects.filter(is_active=True)
+
+
+# ── Membership views ──────────────────────────────────────────────
+
+
+class MembershipPurchaseView(generics.CreateAPIView):
+    """Authenticated User purchases a Membership."""
+
+    serializer_class = MembershipPurchaseSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        membership = serializer.save()
+        return Response(
+            MembershipSerializer(membership).data, status=status.HTTP_201_CREATED
+        )
+
+
+class MyMembershipsView(generics.ListAPIView):
+    """Authenticated User: list their own Memberships."""
+
+    serializer_class = MembershipSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Membership.objects.filter(owner=self.request.user).select_related(
+            "membership_type"
+        )
+
+
+class MembershipCancelView(generics.GenericAPIView):
+    """Authenticated User cancels one of their own Memberships."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            membership = Membership.objects.get(pk=pk, owner=request.user)
+        except Membership.DoesNotExist:
+            return Response(
+                {"detail": "Membership not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+        try:
+            membership.transition_to("cancelled")
+        except ValueError as e:
+            return Response(
+                {"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST
+            )
+        return Response(MembershipSerializer(membership).data)
+
+
+class AdminMembershipListView(generics.ListAPIView):
+    """Admin: list all Memberships in the Tenant, with optional status filter."""
+
+    serializer_class = MembershipSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        if not self.request.user.is_tenant_admin:
+            from rest_framework.exceptions import PermissionDenied
+
+            raise PermissionDenied("Only Admins can view all memberships.")
+        qs = Membership.objects.all().select_related("membership_type", "owner")
+        status_filter = self.request.query_params.get("status")
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+        return qs
+
+
+class AdminMembershipTransitionView(generics.GenericAPIView):
+    """Admin: transition a Membership's status (e.g. lapsed → active)."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        if not request.user.is_tenant_admin:
+            from rest_framework.exceptions import PermissionDenied
+
+            raise PermissionDenied("Only Admins can transition membership status.")
+        try:
+            membership = Membership.objects.get(pk=pk)
+        except Membership.DoesNotExist:
+            return Response(
+                {"detail": "Membership not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+        new_status = request.data.get("status")
+        if not new_status:
+            return Response(
+                {"detail": "Status is required."}, status=status.HTTP_400_BAD_REQUEST
+            )
+        try:
+            membership.transition_to(new_status)
+        except ValueError as e:
+            return Response(
+                {"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST
+            )
+        return Response(MembershipSerializer(membership).data)

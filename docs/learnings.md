@@ -36,3 +36,5 @@ Captured during implementation — insights, gotchas, and ideas for future work.
 - BrandKit uses `FileField` (not `ImageField`) to avoid requiring Pillow as a dependency. This means uploaded files are not validated as images at the Django level.
 - JWT tokens are stored in `localStorage` — suitable for SPA but not httpOnly. Consider moving to httpOnly cookies if XSS attack surface grows.
 - Password reset returns token+uid directly in the API response (for dev). Production must send these via email only to avoid exposing reset tokens.
+- Membership end dates use simple day arithmetic (30/365 days) rather than calendar-month precision. Production should use `dateutil.relativedelta` for accurate month/year calculations (e.g. Feb 28 + 1 month = Mar 28, not Mar 30).
+- `DateField` default must use `datetime.date.today` not `timezone.now` — DRF's `DateField` serializer refuses to coerce datetime to date to avoid losing timezone info.

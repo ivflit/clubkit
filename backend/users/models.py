@@ -16,3 +16,7 @@ class CustomUser(AbstractUser):
     @property
     def is_tenant_admin(self):
         return self.role == "admin"
+
+    @property
+    def has_active_membership(self):
+        return self.memberships.filter(status="active").exists()

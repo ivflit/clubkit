@@ -50,3 +50,23 @@ Summary: Completed remaining acceptance criteria for user authentication.
   - Key decision: email used as username (case-insensitive uniqueness)
 ---
 
+---
+Date: 2026-05-09
+Issue: #7 - Membership purchase and lifecycle
+Commit: d63a33c
+Summary: Implemented Membership model, lifecycle state machine, and full CRUD.
+  - Membership model: owner (FK to CustomUser), membership_type (FK to MembershipType), status, start_date, end_date
+  - Lifecycle state machine with VALID_TRANSITIONS: active→lapsed/cancelled, lapsed→active/cancelled, cancelled→(terminal)
+  - End date auto-calculated from billing_frequency (30 days monthly, 365 days annual)
+  - Purchase API (POST /api/membership-types/memberships/purchase/) creates active Membership
+  - My Memberships API (GET /api/membership-types/memberships/mine/) and frontend page
+  - Cancel API (POST /api/membership-types/memberships/{id}/cancel/) scoped to owner
+  - Admin Members API (GET /api/membership-types/memberships/admin/) with ?status= filter
+  - Admin transition API (POST /api/membership-types/memberships/{id}/transition/) for lifecycle changes
+  - has_active_membership property on CustomUser for members-only access control
+  - 23 new tests: purchase, lifecycle transitions, permission checks, status filtering, end date calculation
+  - All 74 tests passing (51 existing + 23 new)
+  - Key decision: Membership uses PROTECT on membership_type FK (can't delete types with existing memberships)
+  - Key decision: cancelled is a terminal state (no transitions out)
+---
+
