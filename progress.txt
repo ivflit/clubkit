@@ -70,3 +70,21 @@ Summary: Implemented Membership model, lifecycle state machine, and full CRUD.
   - Key decision: cancelled is a terminal state (no transitions out)
 ---
 
+---
+Date: 2026-05-09
+Issue: #10 - Events: Admin CRUD with detail pages
+Commit: 892ac72
+Summary: Implemented Event model, admin CRUD API, and public detail pages with visibility enforcement.
+  - Event model in events app (TENANT_APPS): title, description (rich text HTML), date_time, location, visibility (public/members_only), capacity (optional), status (upcoming/past/cancelled), created_by FK
+  - Admin API: list, create, retrieve, update, cancel Events — restricted to Tenant Admins
+  - Public API: list upcoming public Events, detail page for any Event with visibility enforcement
+  - Member API: authenticated list showing public + members-only Events for active Members
+  - Members-only Events return 403 for unauthenticated users and users without active Membership
+  - Admin UI: Next.js page at /admin/events with create/edit form, event table, cancel action
+  - Public Events page at /events with card grid, detail page at /events/[id] rendering rich text HTML
+  - 19 new tests: CRUD, permission checks, visibility enforcement, rich text storage
+  - All 93 tests passing (74 existing + 19 new)
+  - Key decision: description stored as raw HTML in TextField, rendered via dangerouslySetInnerHTML (sanitisation needed for production)
+  - Key decision: textarea for HTML input in admin (rich text editor like Tiptap is a post-v1 enhancement)
+---
+

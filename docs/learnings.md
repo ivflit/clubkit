@@ -13,6 +13,8 @@ Captured during implementation — insights, gotchas, and ideas for future work.
 
 ## Post-v1 Ideas
 
+- Rich text editor upgrade: the Events admin currently uses a plain `<textarea>` for HTML content. A proper WYSIWYG editor (Tiptap, TipTap, or similar) would improve the admin experience. The backend stores raw HTML in a TextField which is rendered via `dangerouslySetInnerHTML` — sanitisation (e.g. DOMPurify) should be added before rendering user-supplied HTML in production.
+
 - Upgrade logo/hero_image from `FileField` to `ImageField` (with Pillow) for server-side image validation and thumbnail generation
 - Add image dimension/size validation on upload (e.g. max 2MB, minimum logo dimensions)
 - Configurable domain suffix — currently hardcoded to `.lvh.me` in onboarding; production will need a configurable base domain
