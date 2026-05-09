@@ -9,7 +9,7 @@ Read these files for context:
 - progress.txt (what has been done so far)
 - CLAUDE.md (project conventions)
 
-Then follow these steps:
+Then follow these steps IN THIS EXACT ORDER:
 
 1. FETCH ISSUES: Run 'gh issue list --state open --label ready-for-agent --json number,title,body,labels --jq .' to get all open AFK-ready issues. Also run 'gh issue list --state closed --json number,title --jq .' to see what's already done.
 
@@ -27,9 +27,9 @@ Then follow these steps:
    - If neither exists yet (e.g. scaffolding issue), verify the setup works (migrations run, dev server starts, etc.)
    Fix any failures before proceeding.
 
-5. VERIFY ALL CRITERIA MET: After tests pass, check the issue body. If ANY acceptance criteria are still unticked ('- [ ]'), go back and implement them. Do NOT close the issue until every criterion is ticked. Loop until all are complete.
+5. VERIFY ALL CRITERIA MET: After tests pass, check the issue body. If ANY acceptance criteria are still unticked ('- [ ]'), go back to step 3 and implement them. Do NOT proceed until every criterion is ticked.
 
-6. CLOSE THE ISSUE: Only when ALL acceptance criteria are ticked, run 'gh issue close <number> --comment \"Implemented in commit <hash>. All acceptance criteria met.\"'
+6. CAPTURE LEARNINGS: If you discovered anything noteworthy during implementation — post-v1 feature ideas, technical debt, architectural insights, edge cases, gotchas — append them to docs/learnings.md under the appropriate heading. Create the file if it doesn't exist. Keep entries concise.
 
 7. UPDATE PROGRESS: Append to progress.txt with this format:
    ---
@@ -39,9 +39,20 @@ Then follow these steps:
    Summary: <what was done, key decisions made>
    ---
 
-8. CAPTURE LEARNINGS: If you discover anything noteworthy during implementation — post-v1 feature ideas, technical debt, architectural insights, edge cases, gotchas — append them to docs/learnings.md under the appropriate heading (Post-v1 Ideas, Technical Debt, Edge Cases, Gotchas). Create the file if it doesn't exist. Keep entries concise.
+8. COMMIT AND PUSH: This step is CRITICAL — do NOT skip it.
+   a. Run 'git add -A' to stage ALL changed files
+   b. Run 'git status' to verify files are staged
+   c. Run 'git commit -m \"feat: <description> (#<issue-number>)\"'
+   d. Run 'git push origin main'
+   e. Verify the push succeeded. If it fails, diagnose and fix.
+   f. Save the commit hash from the output.
 
-9. COMMIT AND PUSH: Stage all changed files and make a git commit with a clear message referencing the issue number (e.g. 'feat: implement tenant schema infrastructure (#1)'). Then push to origin main.
+9. CLOSE THE ISSUE: Only AFTER the commit and push succeed, run 'gh issue close <number> --comment \"Implemented in commit <hash>. All acceptance criteria met.\"'. Do NOT close the issue if the commit or push failed.
+
+IMPORTANT RULES:
+- Steps MUST be done in order. Never close an issue before committing and pushing.
+- Never skip the commit. Every iteration MUST produce a commit and push.
+- If something fails, fix it before moving on. Do not silently skip steps.
 
 If there are NO unblocked ready-for-agent issues available, output <promise>COMPLETE</promise> and stop.
 "

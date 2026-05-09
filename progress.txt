@@ -35,3 +35,18 @@ Summary: Implemented self-service Tenant onboarding flow with Brand Kit.
   - Key decision: BrandKit in public schema (needed for theming before tenant context)
 ---
 
+---
+Date: 2026-05-09
+Issue: #4 - User auth: registration, login, and role management
+Summary: Completed remaining acceptance criteria for user authentication.
+  - Next.js login, register, and forgot-password pages with Brand Kit theming (logo, primary colour on buttons/headings/links/focus rings)
+  - useBrandKit() hook fetches tenant branding for client components
+  - CrossTenantAuthIsolationTest: 3 tests verify users cannot authenticate across tenants (login rejected, JWT rejected)
+  - OnboardingAdminCreationTest: verifies onboarding creates first Admin user
+  - PasswordResetTest: covers request, confirm, and non-existent email handling
+  - Updated existing onboarding tests to include required admin_email/admin_password fields
+  - Backend: registration, login (JWT via simplejwt), /me/, role update, password reset endpoints
+  - Key decision: JWT stored in localStorage (suitable for SPA, 30-min access / 7-day refresh)
+  - Key decision: email used as username (case-insensitive uniqueness)
+---
+

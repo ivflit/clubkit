@@ -34,3 +34,5 @@ Captured during implementation — insights, gotchas, and ideas for future work.
 ## Technical Debt
 
 - BrandKit uses `FileField` (not `ImageField`) to avoid requiring Pillow as a dependency. This means uploaded files are not validated as images at the Django level.
+- JWT tokens are stored in `localStorage` — suitable for SPA but not httpOnly. Consider moving to httpOnly cookies if XSS attack surface grows.
+- Password reset returns token+uid directly in the API response (for dev). Production must send these via email only to avoid exposing reset tokens.

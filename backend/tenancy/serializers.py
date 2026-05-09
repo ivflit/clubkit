@@ -1,4 +1,6 @@
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django_tenants.utils import tenant_context
 from rest_framework import serializers
 
 from tenancy.models import BrandKit, Tenant, TenantDomain, validate_subdomain_slug
@@ -23,11 +25,17 @@ class BrandKitSerializer(serializers.ModelSerializer):
 
 
 class OnboardingSerializer(serializers.Serializer):
-    """Accepts Tenant + Brand Kit fields and creates both."""
+    """Accepts Tenant + Brand Kit + Admin User fields and creates all three."""
 
     # Tenant fields
     club_name = serializers.CharField(max_length=255)
     subdomain = serializers.SlugField(max_length=63)
+
+    # Admin user fields
+    admin_email = serializers.EmailField()
+    admin_password = serializers.CharField(write_only=True, min_length=8)
+    admin_first_name = serializers.CharField(max_length=150, required=False, default="")
+    admin_last_name = serializers.CharField(max_length=150, required=False, default="")
 
     # Brand Kit fields (all optional for onboarding)
     logo = serializers.FileField(required=False)
@@ -68,6 +76,12 @@ class OnboardingSerializer(serializers.Serializer):
         subdomain = validated_data.pop("subdomain")
         club_name = validated_data.pop("club_name")
 
+        # Extract admin user fields
+        admin_email = validated_data.pop("admin_email")
+        admin_password = validated_data.pop("admin_password")
+        admin_first_name = validated_data.pop("admin_first_name", "")
+        admin_last_name = validated_data.pop("admin_last_name", "")
+
         # Separate brand kit fields
         brand_kit_fields = {}
         for field in BrandKitSerializer.Meta.fields:
@@ -89,7 +103,19 @@ class OnboardingSerializer(serializers.Serializer):
         )
 
         # Create Brand Kit
-        brand_kit = BrandKit.objects.create(tenant=tenant, **brand_kit_fields)
+        BrandKit.objects.create(tenant=tenant, **brand_kit_fields)
+
+        # Create the first Admin user within the Tenant's schema
+        User = get_user_model()
+        with tenant_context(tenant):
+            User.objects.create_user(
+                username=admin_email,
+                email=admin_email,
+                password=admin_password,
+                first_name=admin_first_name,
+                last_name=admin_last_name,
+                role="admin",
+            )
 
         return tenant
 

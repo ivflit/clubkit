@@ -26,6 +26,8 @@ class OnboardingAPITest(TestCase):
         resp = self._onboard({
             "club_name": "Riverside FC",
             "subdomain": "riverside-fc",
+            "admin_email": "admin@riverside.com",
+            "admin_password": "StrongPass123!",
             "primary_colour": "#ff0000",
             "accent_colour": "#00ff00",
             "description": "A great club",
@@ -40,7 +42,7 @@ class OnboardingAPITest(TestCase):
         self.assertEqual(data["brand_kit"]["contact_email"], "info@riverside.com")
 
     def test_tenant_and_domain_created(self):
-        self._onboard({"club_name": "Parkside", "subdomain": "parkside"})
+        self._onboard({"club_name": "Parkside", "subdomain": "parkside", "admin_email": "admin@parkside.com", "admin_password": "StrongPass123!"})
         tenant = Tenant.objects.get(slug="parkside")
         self.assertEqual(tenant.name, "Parkside")
         self.assertEqual(tenant.schema_name, "parkside")
@@ -52,6 +54,8 @@ class OnboardingAPITest(TestCase):
         self._onboard({
             "club_name": "Hillside",
             "subdomain": "hillside",
+            "admin_email": "admin@hillside.com",
+            "admin_password": "StrongPass123!",
             "description": "Hillside sports club",
         })
         tenant = Tenant.objects.get(slug="hillside")
@@ -60,7 +64,7 @@ class OnboardingAPITest(TestCase):
         self.assertEqual(brand_kit.primary_colour, "#1a73e8")  # default
 
     def test_schema_provisioned_on_onboarding(self):
-        self._onboard({"club_name": "Schema Test", "subdomain": "schema-test"})
+        self._onboard({"club_name": "Schema Test", "subdomain": "schema-test", "admin_email": "admin@schema.com", "admin_password": "StrongPass123!"})
         with connection.cursor() as cursor:
             cursor.execute(
                 "SELECT EXISTS(SELECT 1 FROM pg_namespace WHERE nspname = %s)",
@@ -69,8 +73,8 @@ class OnboardingAPITest(TestCase):
             self.assertTrue(cursor.fetchone()[0])
 
     def test_duplicate_subdomain_rejected(self):
-        self._onboard({"club_name": "First", "subdomain": "unique-slug"})
-        resp = self._onboard({"club_name": "Second", "subdomain": "unique-slug"})
+        self._onboard({"club_name": "First", "subdomain": "unique-slug", "admin_email": "admin@first.com", "admin_password": "StrongPass123!"})
+        resp = self._onboard({"club_name": "Second", "subdomain": "unique-slug", "admin_email": "admin@second.com", "admin_password": "StrongPass123!"})
         self.assertEqual(resp.status_code, 400)
         self.assertIn("subdomain", resp.json())
 
@@ -92,26 +96,26 @@ class SubdomainSlugValidationTest(TestCase):
         )
 
     def test_reserved_subdomain_rejected(self):
-        resp = self._onboard({"club_name": "Admin Club", "subdomain": "admin"})
+        resp = self._onboard({"club_name": "Admin Club", "subdomain": "admin", "admin_email": "a@a.com", "admin_password": "StrongPass123!"})
         self.assertEqual(resp.status_code, 400)
         self.assertIn("subdomain", resp.json())
 
     def test_hyphen_start_rejected(self):
-        resp = self._onboard({"club_name": "Bad Slug", "subdomain": "-bad"})
+        resp = self._onboard({"club_name": "Bad Slug", "subdomain": "-bad", "admin_email": "a@a.com", "admin_password": "StrongPass123!"})
         self.assertEqual(resp.status_code, 400)
 
     def test_uppercase_normalised_to_lowercase(self):
-        resp = self._onboard({"club_name": "Upper FC", "subdomain": "Upper-FC"})
+        resp = self._onboard({"club_name": "Upper FC", "subdomain": "Upper-FC", "admin_email": "a@upper.com", "admin_password": "StrongPass123!"})
         self.assertEqual(resp.status_code, 201)
         self.assertEqual(resp.json()["slug"], "upper-fc")
 
     def test_missing_club_name_rejected(self):
-        resp = self._onboard({"subdomain": "no-name"})
+        resp = self._onboard({"subdomain": "no-name", "admin_email": "a@a.com", "admin_password": "StrongPass123!"})
         self.assertEqual(resp.status_code, 400)
         self.assertIn("club_name", resp.json())
 
     def test_missing_subdomain_rejected(self):
-        resp = self._onboard({"club_name": "No Subdomain"})
+        resp = self._onboard({"club_name": "No Subdomain", "admin_email": "a@a.com", "admin_password": "StrongPass123!"})
         self.assertEqual(resp.status_code, 400)
         self.assertIn("subdomain", resp.json())
 
@@ -129,7 +133,7 @@ class BrandKitEditAPITest(TestCase):
         # Create a tenant via onboarding
         self.client.post(
             "/api/onboarding/",
-            {"club_name": "Edit Test FC", "subdomain": "edit-test"},
+            {"club_name": "Edit Test FC", "subdomain": "edit-test", "admin_email": "admin@edit.com", "admin_password": "StrongPass123!"},
             format="json",
             HTTP_HOST="lvh.me",
         )
