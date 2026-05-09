@@ -1,6 +1,7 @@
 set -e
 
-claude --permission-mode acceptEdits "\
+while true; do
+  OUTPUT=$(claude --permission-mode acceptEdits "\
 You are working on the ClubKit project — a multi-tenant SaaS platform for local sports clubs.
 
 Read these files for context:
@@ -44,4 +45,13 @@ Then follow these steps:
 9. COMMIT AND PUSH: Stage all changed files and make a git commit with a clear message referencing the issue number (e.g. 'feat: implement tenant schema infrastructure (#1)'). Then push to origin main.
 
 If there are NO unblocked ready-for-agent issues available, output <promise>COMPLETE</promise> and stop.
-"
+")
+
+  # Check if ralph signalled completion
+  if echo "$OUTPUT" | grep -q '<promise>COMPLETE</promise>'; then
+    echo "All unblocked issues complete. Stopping."
+    break
+  fi
+
+  echo "Issue completed. Starting next iteration..."
+done
