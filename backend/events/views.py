@@ -3,8 +3,12 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Event
-from .serializers import EventSerializer, PublicEventSerializer
+from .models import Event, EventRegistration
+from .serializers import (
+    EventRegistrationSerializer,
+    EventSerializer,
+    PublicEventSerializer,
+)
 
 
 # ── Admin views ──────────────────────────────────────────────────
@@ -67,6 +71,21 @@ class AdminEventCancelView(generics.GenericAPIView):
         return Response(EventSerializer(event).data)
 
 
+class AdminEventRegistrationsView(generics.ListAPIView):
+    """Admin: list all registrations for a specific Event."""
+
+    serializer_class = EventRegistrationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        if not self.request.user.is_tenant_admin:
+            raise PermissionDenied("Only Admins can view registrations.")
+        event_pk = self.kwargs["pk"]
+        return EventRegistration.objects.filter(event_id=event_pk).select_related(
+            "user", "event"
+        )
+
+
 # ── Public views ─────────────────────────────────────────────────
 
 
@@ -127,3 +146,90 @@ class MemberEventListView(generics.ListAPIView):
         if not self.request.user.has_active_membership:
             qs = qs.filter(visibility="public")
         return qs
+
+
+# ── Registration views ───────────────────────────────────────────
+
+
+class EventRegisterView(generics.GenericAPIView):
+    """Register the authenticated User for an Event."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            event = Event.objects.get(pk=pk)
+        except Event.DoesNotExist:
+            return Response(
+                {"detail": "Event not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if event.status != "upcoming":
+            return Response(
+                {"detail": "Cannot register for a cancelled or past Event."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Members-only visibility check
+        if event.visibility == "members_only" and not request.user.has_active_membership:
+            return Response(
+                {"detail": "Active Membership required to register for this Event."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Duplicate check
+        if EventRegistration.objects.filter(event=event, user=request.user).exists():
+            return Response(
+                {"detail": "Already registered for this Event."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Capacity check
+        if event.is_full:
+            return Response(
+                {"detail": "This Event is full."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        registration = EventRegistration.objects.create(
+            event=event, user=request.user
+        )
+        serializer = EventRegistrationSerializer(registration)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class EventCancelRegistrationView(generics.GenericAPIView):
+    """Cancel the authenticated User's registration for an Event."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            registration = EventRegistration.objects.get(
+                event_id=pk, user=request.user
+            )
+        except EventRegistration.DoesNotExist:
+            return Response(
+                {"detail": "You are not registered for this Event."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        registration.delete()
+        return Response(
+            {"detail": "Registration cancelled."},
+            status=status.HTTP_200_OK,
+        )
+
+
+class MyRegisteredEventsView(generics.ListAPIView):
+    """List Events the authenticated User is registered for."""
+
+    serializer_class = EventRegistrationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return (
+            EventRegistration.objects.filter(user=self.request.user)
+            .select_related("event", "user")
+        )

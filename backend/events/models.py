@@ -39,3 +39,36 @@ class Event(models.Model):
 
     def __str__(self):
         return self.title
+
+    @property
+    def spots_remaining(self):
+        if self.capacity is None:
+            return None
+        return max(0, self.capacity - self.registrations.count())
+
+    @property
+    def is_full(self):
+        if self.capacity is None:
+            return False
+        return self.registrations.count() >= self.capacity
+
+
+class EventRegistration(models.Model):
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+        related_name="registrations",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="event_registrations",
+    )
+    registered_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [("event", "user")]
+        ordering = ["-registered_at"]
+
+    def __str__(self):
+        return f"{self.user} → {self.event}"

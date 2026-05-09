@@ -19,6 +19,7 @@ interface Event {
   created_by_email: string;
   created_at: string;
   updated_at: string;
+  registration_count: number;
 }
 
 type EventFormData = {
@@ -334,6 +335,7 @@ export default function AdminEventsPage() {
                 <th className="px-4 py-3 font-medium text-zinc-600 dark:text-zinc-300">Location</th>
                 <th className="px-4 py-3 font-medium text-zinc-600 dark:text-zinc-300">Visibility</th>
                 <th className="px-4 py-3 font-medium text-zinc-600 dark:text-zinc-300">Capacity</th>
+                <th className="px-4 py-3 font-medium text-zinc-600 dark:text-zinc-300">Registered</th>
                 <th className="px-4 py-3 font-medium text-zinc-600 dark:text-zinc-300">Status</th>
                 <th className="px-4 py-3 font-medium text-zinc-600 dark:text-zinc-300">Actions</th>
               </tr>
@@ -348,6 +350,15 @@ export default function AdminEventsPage() {
                     {ev.visibility === "public" ? "Public" : "Members only"}
                   </td>
                   <td className="px-4 py-3 text-zinc-700 dark:text-zinc-300">{ev.capacity ?? "—"}</td>
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={() => router.push(`/admin/events/${ev.id}/registrations`)}
+                      className="text-sm hover:underline"
+                      style={{ color: primaryColour }}
+                    >
+                      {ev.registration_count}
+                    </button>
+                  </td>
                   <td className="px-4 py-3">
                     <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${STATUS_STYLES[ev.status] ?? ""}`}>
                       {ev.status.charAt(0).toUpperCase() + ev.status.slice(1)}

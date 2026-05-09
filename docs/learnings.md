@@ -31,6 +31,10 @@ Captured during implementation — insights, gotchas, and ideas for future work.
 
 ## Edge Cases
 
+- **Race condition on capacity enforcement**: The current EventRegistration capacity check (count registrations, compare to capacity, then create) is not atomic. Under high concurrency, two users could both pass the check and exceed capacity. For production, consider using `select_for_update()` on the Event row or a database constraint.
+
+- **Cancelling registration after event starts**: Currently no time-based restriction on registration cancellation. A user could cancel their registration after the event has already started. Consider adding a cutoff time for cancellations.
+
 - Schema names cannot contain hyphens (PostgreSQL limitation), so `schema_name` uses `slug.replace("-", "_")`. If a slug is `a-b` and another is `a_b`, they'd collide on schema_name. The slug uniqueness constraint prevents this indirectly, but it's worth noting.
 
 ## Technical Debt

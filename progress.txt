@@ -88,3 +88,22 @@ Summary: Implemented Event model, admin CRUD API, and public detail pages with v
   - Key decision: textarea for HTML input in admin (rich text editor like Tiptap is a post-v1 enhancement)
 ---
 
+---
+Date: 2026-05-09
+Issue: #11 - Event registration with capacity limits
+Commit: (pending)
+Summary: Implemented EventRegistration model, API endpoints, and frontend UI.
+  - EventRegistration model: FK to Event + User, unique_together constraint, registered_at timestamp
+  - Registration API: register (POST /api/events/{id}/register/), cancel (POST /api/events/{id}/unregister/)
+  - Capacity enforcement: reject registration when event is full, spots_remaining property on Event model
+  - Event detail API enhanced with spots_remaining, is_registered, registration_count fields
+  - My Registered Events page (GET /api/events/my-registrations/) with frontend at /my-events
+  - Admin registrations view (GET /api/events/{id}/registrations/) with frontend at /admin/events/[id]/registrations
+  - Members-only Events require active Membership to register (403 for guests)
+  - Cannot register for cancelled/past Events (400)
+  - 18 new tests: registration, capacity limits, cancellation, permissions, members-only enforcement
+  - Admin events table shows registration count column with link to registrations page
+  - Key decision: EventRegistration uses unique_together for (event, user) to prevent duplicates
+  - Key decision: capacity=None means unlimited (no restriction on registrations)
+---
+
