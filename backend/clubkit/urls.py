@@ -9,4 +9,5 @@ urlpatterns = [
     path("api/brand-kit/", BrandKitDetailView.as_view(), name="brand-kit-detail"),
     path("api/brand-kit/update/", BrandKitUpdateView.as_view(), name="brand-kit-update"),
     path("api/auth/", include("users.urls")),
+    path("api/membership-types/", include("memberships.urls")),
 ]

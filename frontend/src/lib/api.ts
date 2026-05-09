@@ -39,6 +39,47 @@ export async function apiPost(path: string, body: FormData | Record<string, unkn
   return res.json();
 }
 
+export async function apiAuthGet(path: string, token: string, subdomain?: string) {
+  const base = getApiBase(subdomain);
+  const res = await fetch(`${base}${path}`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new ApiError(res.status, data);
+  }
+  return res.json();
+}
+
+export async function apiAuthPost(path: string, body: Record<string, unknown>, token: string, subdomain?: string) {
+  const base = getApiBase(subdomain);
+  const res = await fetch(`${base}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new ApiError(res.status, data);
+  }
+  return res.json();
+}
+
+export async function apiAuthPatch(path: string, body: Record<string, unknown>, token: string, subdomain?: string) {
+  const base = getApiBase(subdomain);
+  const res = await fetch(`${base}${path}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new ApiError(res.status, data);
+  }
+  return res.json();
+}
+
 export class ApiError extends Error {
   status: number;
   data: Record<string, unknown>;
