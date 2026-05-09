@@ -91,7 +91,7 @@ Summary: Implemented Event model, admin CRUD API, and public detail pages with v
 ---
 Date: 2026-05-09
 Issue: #11 - Event registration with capacity limits
-Commit: (pending)
+Commit: cc72286
 Summary: Implemented EventRegistration model, API endpoints, and frontend UI.
   - EventRegistration model: FK to Event + User, unique_together constraint, registered_at timestamp
   - Registration API: register (POST /api/events/{id}/register/), cancel (POST /api/events/{id}/unregister/)
