@@ -7,9 +7,12 @@ from tenancy.models import BrandKit, Tenant, TenantDomain, validate_subdomain_sl
 
 
 class BrandKitSerializer(serializers.ModelSerializer):
+    club_name = serializers.CharField(source="tenant.name", read_only=True)
+
     class Meta:
         model = BrandKit
         fields = [
+            "club_name",
             "logo",
             "primary_colour",
             "accent_colour",

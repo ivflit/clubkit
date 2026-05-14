@@ -1,6 +1,7 @@
 import { apiGet, ApiError } from "./api";
 
 export interface BrandKit {
+  club_name: string;
   logo: string;
   primary_colour: string;
   accent_colour: string;
