@@ -1,0 +1,18 @@
+{% extends "notifications/base_email.html" %}
+
+{% block subject %}Your membership has lapsed{% endblock %}
+
+{% block content %}
+<h2>Your membership has lapsed</h2>
+<p>Hi {{ user.first_name|default:user.email }},</p>
+<p>Unfortunately, your <strong>{{ membership_type_name }}</strong> membership at {{ club_name }} has lapsed.</p>
+
+<div class="detail-box">
+  <p><strong>Membership:</strong> {{ membership_type_name }}</p>
+  <p><strong>Status:</strong> Lapsed</p>
+</div>
+
+<p>This may have happened because your membership period ended or a payment was not received. To continue enjoying member benefits, please renew your membership as soon as possible.</p>
+
+<p>If you believe this is an error, please contact {{ club_name }} directly.</p>
+{% endblock %}

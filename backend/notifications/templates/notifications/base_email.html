@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block subject %}Notification{% endblock %}</title>
+  <style>
+    body { margin: 0; padding: 0; background-color: #f4f4f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .wrapper { max-width: 600px; margin: 32px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .header { background-color: {{ primary_colour }}; padding: 24px 32px; text-align: center; }
+    .header img { max-height: 48px; max-width: 200px; object-fit: contain; }
+    .header-title { color: #ffffff; font-size: 20px; font-weight: 600; margin: 8px 0 0; }
+    .body { padding: 32px; color: #1a1a2e; }
+    .body h2 { color: {{ primary_colour }}; margin-top: 0; font-size: 18px; }
+    .body p { line-height: 1.6; margin: 0 0 16px; color: #374151; }
+    .body .detail-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 16px; margin: 20px 0; }
+    .body .detail-box p { margin: 4px 0; font-size: 14px; }
+    .cta { display: inline-block; background-color: {{ primary_colour }}; color: #ffffff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 14px; margin: 16px 0; }
+    .footer { padding: 20px 32px; background: #f9fafb; border-top: 1px solid #e5e7eb; text-align: center; color: #9ca3af; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      {% if logo_url %}
+        <img src="{{ logo_url }}" alt="{{ club_name }} logo">
+      {% else %}
+        <div class="header-title">{{ club_name }}</div>
+      {% endif %}
+    </div>
+    <div class="body">
+      {% block content %}{% endblock %}
+    </div>
+    <div class="footer">
+      <p>{{ club_name }} · Powered by ClubKit</p>
+      <p>You received this email because you are a registered member of {{ club_name }}.</p>
+    </div>
+  </div>
+</body>
+</html>

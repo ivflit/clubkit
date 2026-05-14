@@ -1,0 +1,18 @@
+{% extends "notifications/base_email.html" %}
+
+{% block subject %}Payment failed — action required{% endblock %}
+
+{% block content %}
+<h2>Payment failed</h2>
+<p>Hi {{ user.first_name|default:user.email }},</p>
+<p>We were unable to process a payment for your <strong>{{ membership_type_name }}</strong> membership at {{ club_name }}.</p>
+
+<div class="detail-box">
+  <p><strong>Membership:</strong> {{ membership_type_name }}</p>
+  <p><strong>Action required:</strong> Update your payment method</p>
+</div>
+
+<p>Please update your payment method to keep your membership active and avoid losing access to member benefits.</p>
+
+<p>If you continue to have issues, please contact {{ club_name }} for assistance.</p>
+{% endblock %}

@@ -211,3 +211,23 @@ Summary: Implemented EventCalendarList component with calendar/list toggle for p
   - Key decision: calendar view hidden on mobile (sm:hidden), replaced by agenda-style list for usability
 ---
 
+---
+Date: 2026-05-15
+Issue: #15 - Email Notifications
+Commit: TBD
+Summary: Implemented notifications app with email templates, signals, and management commands.
+  - notifications app (no models, no migrations needed) added to INSTALLED_APPS
+  - AppConfig.ready() registers signals to avoid circular imports at module level
+  - notifications/services.py: send_renewal_reminder_email, send_membership_lapsed_email, send_payment_failed_email, send_event_reminder_email
+  - Thread-based async sending (NOTIFICATIONS_SEND_ASYNC=True default; False for tests)
+  - Signal: post_save on Membership fires lapsed email when status transitions to 'lapsed' (checks update_fields)
+  - 4 HTML email templates (base_email.html + 4 child templates): brand-kit-aware header, club-specific content
+  - Brand Kit injected via _base_context(): primary colour, logo URL, club name
+  - Management commands: send_renewal_reminders (--days N) and send_event_reminders (--hours N)
+  - Both commands iterate all non-public tenant schemas via tenant_context()
+  - Email settings: EMAIL_BACKEND=console (dev), DEFAULT_FROM_EMAIL=noreply@clubkit.com
+  - 9 tests: lapsed trigger, email content, cancelled does NOT trigger, renewal/event/payment services, brand kit colour in HTML, graceful fallback without brand kit, management command sends/skips
+  - Key decision: thread-based async (not Celery/Django-Q) avoids infrastructure dependencies for this portfolio project — async is pluggable via NOTIFICATIONS_SEND_ASYNC setting
+  - Key decision: payment_failed trigger is a callable stub (send_payment_failed_email) awaiting Stripe webhook (#8) implementation
+---
+

@@ -51,6 +51,14 @@ Captured during implementation — insights, gotchas, and ideas for future work.
 - **Stripe connection status is a placeholder**: `stripe_connected` always returns `False` until Stripe Connect (#8) is implemented. The field is included in the API response now so the frontend shape is established.
 - **PlatformAdmin bootstrap**: There's no in-app way to create the very first PlatformAdmin (a chicken-and-egg problem — all create endpoints require an existing PlatformAdmin token). In production, use a Django management command to bootstrap the first account.
 
+## Email Notifications
+
+- **Thread-based async vs Celery**: Used `threading.Thread(daemon=True)` for async email dispatch instead of Celery to avoid Redis/RabbitMQ infrastructure. The `NOTIFICATIONS_SEND_ASYNC` setting makes this pluggable — switch to Celery by wrapping `_do_send()` in a Celery task and removing the thread. For production at scale, Celery is strongly preferred (thread emails are lost if the process crashes).
+- **Signal fires on `update_fields`**: The lapsed email signal checks `"status" in update_fields` to avoid firing on every Membership save. The `transition_to()` method uses `save(update_fields=["status", "updated_at"])` which is exactly what the signal checks.
+- **BrandKit queried from tenant context**: `BrandKit.objects.get(tenant=connection.tenant)` works from within a tenant schema context because django-tenants includes `public` in the `search_path`, and BrandKit is a shared (public-schema) model.
+- **Management commands iterate tenants**: Both `send_renewal_reminders` and `send_event_reminders` exclude the `public` schema tenant row and wrap each tenant in `tenant_context()`. This pattern is consistent with how cross-tenant queries work in the Platform Admin view.
+- **`fail_silently=True` on send_mail**: Email failures silently pass to avoid breaking the thread. For production, add Sentry/logging to capture failed sends.
+
 ## Event Calendar View
 
 - **All events fetched once, filtered client-side**: Rather than fetching events per-month via the API, all upcoming events are fetched at page load and the calendar/list component filters them by selected month in JavaScript. This avoids N API calls when navigating months, at the cost of loading all events upfront. Acceptable for clubs with up to ~hundreds of events; for large datasets, consider lazy loading per-month.

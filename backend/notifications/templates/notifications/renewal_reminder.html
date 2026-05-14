@@ -1,0 +1,20 @@
+{% extends "notifications/base_email.html" %}
+
+{% block subject %}Your membership renews soon{% endblock %}
+
+{% block content %}
+<h2>Your membership renews soon</h2>
+<p>Hi {{ user.first_name|default:user.email }},</p>
+<p>This is a friendly reminder that your <strong>{{ membership_type_name }}</strong> membership at {{ club_name }} is due to renew soon.</p>
+
+<div class="detail-box">
+  <p><strong>Membership:</strong> {{ membership_type_name }}</p>
+  <p><strong>Renewal date:</strong> {{ end_date }}</p>
+</div>
+
+<p>No action is needed if your payment details are up to date. If you need to update your payment method, you can do so from your membership page.</p>
+
+<p>If you have any questions, please contact us.</p>
+
+<p>Thank you for being a member of {{ club_name }}!</p>
+{% endblock %}

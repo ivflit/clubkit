@@ -34,6 +34,7 @@ INSTALLED_APPS = list(SHARED_APPS) + [
 ] + [
     "rest_framework",
     "rest_framework_simplejwt",
+    "notifications.apps.NotificationsConfig",
 ]
 
 # --- Database ---
@@ -134,6 +135,14 @@ STATIC_URL = "static/"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+# --- Email ---
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "noreply@clubkit.com"
+
+# Set to False in tests to send emails synchronously (avoids thread/outbox race condition).
+NOTIFICATIONS_SEND_ASYNC = True
 
 # --- Misc ---
 

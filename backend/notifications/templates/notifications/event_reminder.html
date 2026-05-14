@@ -1,0 +1,19 @@
+{% extends "notifications/base_email.html" %}
+
+{% block subject %}Reminder: {{ event.title }} is tomorrow{% endblock %}
+
+{% block content %}
+<h2>Event reminder: {{ event.title }}</h2>
+<p>Hi {{ user.first_name|default:user.email }},</p>
+<p>This is a reminder that you are registered for an upcoming event at {{ club_name }}.</p>
+
+<div class="detail-box">
+  <p><strong>Event:</strong> {{ event.title }}</p>
+  <p><strong>Date &amp; time:</strong> {{ event.date_time }}</p>
+  {% if event.location %}<p><strong>Location:</strong> {{ event.location }}</p>{% endif %}
+</div>
+
+<p>We look forward to seeing you there!</p>
+
+<p>If you can no longer attend, please cancel your registration so your spot can be offered to others.</p>
+{% endblock %}
