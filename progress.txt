@@ -156,7 +156,7 @@ Summary: Implemented the public-facing club site with consistent Brand Kit themi
 ---
 Date: 2026-05-15
 Issue: #14 - Member dashboard
-Commit: TBD
+Commit: 3a093c0
 Summary: Implemented member dashboard with active memberships and upcoming events.
   - GET /api/auth/dashboard/ endpoint returning active_memberships and upcoming_events
   - Active memberships filtered by status='active', ordered by end_date
