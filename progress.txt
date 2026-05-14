@@ -107,3 +107,23 @@ Summary: Implemented EventRegistration model, API endpoints, and frontend UI.
   - Key decision: capacity=None means unlimited (no restriction on registrations)
 ---
 
+---
+Date: 2026-05-14
+Issue: #5 - Public club site with Brand Kit theming
+Commit: 6928abd
+Summary: Implemented the public-facing club site with consistent Brand Kit theming across all pages.
+  - BrandKitSerializer extended to include club_name (from tenant.name) for use in page titles/headers
+  - Root layout.tsx injects --brand-primary and --brand-accent as CSS custom properties on <html> — the theme system
+  - globals.css defines fallback values for --brand-primary and --brand-accent
+  - PublicHeader server component: sticky header with logo, nav links (Home, About, Events, Join), login button
+  - Home page (SSR): hero section with hero image, club description, upcoming events grid (3 max), contact footer
+  - About page (SSR, new): club description, contact info, social media links with empty state handling
+  - Events page converted from client component to SSR with generateMetadata for SEO title/description
+  - Join page converted from client component to SSR with generateMetadata for SEO title/description
+  - All public pages use CSS custom properties (var(--brand-primary), var(--brand-accent)) for consistent theming
+  - Responsive grid layouts (1→2→3 columns) across events and join pages
+  - generateMetadata exports on all public pages produce proper <title> and <meta description> tags
+  - Key decision: brand kit fetched server-side per-page (Next.js deduplicates fetch calls within a request)
+  - Key decision: CSS custom properties set on <html> element in root layout; no client-side theme provider needed
+---
+

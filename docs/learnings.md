@@ -37,6 +37,13 @@ Captured during implementation — insights, gotchas, and ideas for future work.
 
 - Schema names cannot contain hyphens (PostgreSQL limitation), so `schema_name` uses `slug.replace("-", "_")`. If a slug is `a-b` and another is `a_b`, they'd collide on schema_name. The slug uniqueness constraint prevents this indirectly, but it's worth noting.
 
+## Public Site / Theming
+
+- **CSS custom properties on `<html>`**: Setting `--brand-primary` and `--brand-accent` on the root `<html>` element via the Next.js root layout is the cleanest way to provide tenant branding without a client-side theme provider. The root layout runs server-side on every request, so the CSS vars are injected into the initial HTML — no flash of unstyled content.
+- **BrandKit serializer includes `club_name`**: Added as a `read_only` SerializerMethodField reading `tenant.name`. This avoids a separate endpoint just for the club name. Existing tests checking specific fields pass unchanged.
+- **Next.js fetch deduplication**: When the same URL is fetched multiple times within one server render (e.g. brand kit in root layout + brand kit in page), Next.js automatically deduplicates the underlying fetch calls. No explicit cache layer is needed for this pattern.
+- **Mobile nav**: The current PublicHeader doesn't collapse to a hamburger menu on small screens. A mobile-friendly nav (e.g. hidden menu toggle) would improve the experience on phones. Acceptable for v1 given fixed nav links fit in a single row, but should be addressed before launch.
+
 ## Technical Debt
 
 - BrandKit uses `FileField` (not `ImageField`) to avoid requiring Pillow as a dependency. This means uploaded files are not validated as images at the Django level.
