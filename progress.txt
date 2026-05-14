@@ -214,7 +214,7 @@ Summary: Implemented EventCalendarList component with calendar/list toggle for p
 ---
 Date: 2026-05-15
 Issue: #15 - Email Notifications
-Commit: TBD
+Commit: 648cbc6
 Summary: Implemented notifications app with email templates, signals, and management commands.
   - notifications app (no models, no migrations needed) added to INSTALLED_APPS
   - AppConfig.ready() registers signals to avoid circular imports at module level
