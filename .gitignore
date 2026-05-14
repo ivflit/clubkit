@@ -19,6 +19,9 @@ frontend/.next/
 .DS_Store
 Thumbs.db
 
+# Temp files
+issue*.txt
+
 # Environment
 .env
 .env.local

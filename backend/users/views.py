@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
+from django.utils import timezone
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import generics, status
@@ -101,6 +102,61 @@ class PasswordResetRequestView(APIView):
                 "token": token,
             },
             status=status.HTTP_200_OK,
+        )
+
+
+class DashboardView(APIView):
+    """Return the authenticated User's dashboard data: active memberships and upcoming events."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from memberships.models import Membership
+        from events.models import EventRegistration
+
+        active_memberships = (
+            Membership.objects.filter(owner=request.user, status="active")
+            .select_related("membership_type")
+            .order_by("end_date")
+        )
+
+        upcoming_registrations = (
+            EventRegistration.objects.filter(
+                user=request.user,
+                event__status="upcoming",
+                event__date_time__gte=timezone.now(),
+            )
+            .select_related("event")
+            .order_by("event__date_time")
+        )
+
+        memberships_data = [
+            {
+                "id": m.id,
+                "membership_type": m.membership_type.id,
+                "membership_type_name": m.membership_type.name,
+                "status": m.status,
+                "start_date": m.start_date.isoformat(),
+                "end_date": m.end_date.isoformat() if m.end_date else None,
+            }
+            for m in active_memberships
+        ]
+
+        events_data = [
+            {
+                "id": reg.event.id,
+                "title": reg.event.title,
+                "date_time": reg.event.date_time.isoformat(),
+                "location": reg.event.location,
+            }
+            for reg in upcoming_registrations
+        ]
+
+        return Response(
+            {
+                "active_memberships": memberships_data,
+                "upcoming_events": events_data,
+            }
         )
 
 

@@ -153,3 +153,21 @@ Summary: Implemented the public-facing club site with consistent Brand Kit themi
   - Key decision: CSS custom properties set on <html> element in root layout; no client-side theme provider needed
 ---
 
+---
+Date: 2026-05-15
+Issue: #14 - Member dashboard
+Commit: TBD
+Summary: Implemented member dashboard with active memberships and upcoming events.
+  - GET /api/auth/dashboard/ endpoint returning active_memberships and upcoming_events
+  - Active memberships filtered by status='active', ordered by end_date
+  - Upcoming events filtered by event__status='upcoming' AND event__date_time >= now, ordered by date
+  - Data scoped strictly to the requesting user (no cross-user data leakage)
+  - Frontend /dashboard page: active memberships section, upcoming events section, quick links
+  - Empty states for both sections (links to /join and /events)
+  - Redirects to /login if unauthenticated
+  - Branded with Tenant Brand Kit (primary colour on headings and buttons)
+  - 7 backend tests: auth required, empty state, active-only filter, field correctness, upcoming filter, past exclusion, data isolation, event ordering
+  - Key decision: imports of Membership/EventRegistration inside DashboardView method to avoid circular imports
+  - Key decision: filter on both event status and date_time >= now to exclude stale 'upcoming' events with past dates
+---
+

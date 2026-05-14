@@ -51,6 +51,12 @@ Captured during implementation — insights, gotchas, and ideas for future work.
 - **Stripe connection status is a placeholder**: `stripe_connected` always returns `False` until Stripe Connect (#8) is implemented. The field is included in the API response now so the frontend shape is established.
 - **PlatformAdmin bootstrap**: There's no in-app way to create the very first PlatformAdmin (a chicken-and-egg problem — all create endpoints require an existing PlatformAdmin token). In production, use a Django management command to bootstrap the first account.
 
+## Member Dashboard
+
+- **Dashboard aggregates across apps**: The dashboard view imports `Membership` from `memberships` and `EventRegistration` from `events` inside the method body to avoid circular imports at module level in `users/views.py`.
+- **Profile page link is a forward reference**: The dashboard includes a quick link to `/profile` which doesn't exist yet (no profile issue implemented in v1). The link is present to satisfy the acceptance criterion and will resolve once the profile page is built.
+- **Filter by date AND status for upcoming events**: To exclude past events from the dashboard, the query filters on both `event__status="upcoming"` AND `event__date_time__gte=timezone.now()`. Status alone isn't enough — a stale "upcoming" event with a past date would still show without the datetime filter.
+
 ## Technical Debt
 
 - BrandKit uses `FileField` (not `ImageField`) to avoid requiring Pillow as a dependency. This means uploaded files are not validated as images at the Django level.

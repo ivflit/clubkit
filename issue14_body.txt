@@ -1,0 +1,18 @@
+## What to build
+
+The landing page for logged-in Members. Provides an at-a-glance overview of the User's relationship with the club: their active Memberships (with status and renewal dates), upcoming Events they've registered for, and quick links to profile and membership management. This is the first thing a Member sees after logging in.
+
+## Acceptance criteria
+
+- [x] Dashboard page showing active Memberships with status, type name, and renewal/expiry date
+- [x] Upcoming registered Events section with date, title, and link to Event detail
+- [x] Quick links to: My Memberships, Profile, Events
+- [x] Empty states handled (no Memberships, no registered Events)
+- [x] Styled with Tenant Brand Kit
+- [x] Only accessible to authenticated Users (redirects to login otherwise)
+- [x] Tests cover dashboard data aggregation and empty states
+
+## Blocked by
+
+- #7
+- #11
