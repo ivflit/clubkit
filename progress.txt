@@ -194,7 +194,7 @@ Summary: Implemented EventSeries model, occurrence generation, and series cancel
 ---
 Date: 2026-05-15
 Issue: #13 - Event calendar and list views
-Commit: TBD
+Commit: fb60d88
 Summary: Implemented EventCalendarList component with calendar/list toggle for public and member areas.
   - Shared EventCalendarList client component: calendar view (monthly grid) + list view (chronological)
   - Calendar grid: Mon-first header, weeks as rows, today highlighted with primary colour dot
