@@ -93,7 +93,7 @@ export default function DashboardPage() {
       <div className="flex gap-3 mb-8 flex-wrap">
         {[
           { href: "/my-memberships", label: "My Memberships" },
-          { href: "/events", label: "Events" },
+          { href: "/member/events", label: "Events" },
           { href: "/profile", label: "Profile" },
         ].map(({ href, label }) => (
           <Link

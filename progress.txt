@@ -191,3 +191,23 @@ Summary: Implemented EventSeries model, occurrence generation, and series cancel
   - Key decision: series cancel filters date_time >= now so past occurrences are preserved
 ---
 
+---
+Date: 2026-05-15
+Issue: #13 - Event calendar and list views
+Commit: TBD
+Summary: Implemented EventCalendarList component with calendar/list toggle for public and member areas.
+  - Shared EventCalendarList client component: calendar view (monthly grid) + list view (chronological)
+  - Calendar grid: Mon-first header, weeks as rows, today highlighted with primary colour dot
+  - Events displayed as coloured tiles on their date cell in calendar view
+  - Month navigation: prev/next buttons with year rollover
+  - Mobile: sm:hidden calendar grid → agenda-style list for the current month (sm breakpoint)
+  - List view: date badge, title, time, location, members-only badge
+  - Toggle state persisted in component state (defaults to list view)
+  - Public /events page updated: SSR fetches events + brand kit, renders EventCalendarList (public events only)
+  - New /member/events page: client component, fetches /api/events/mine/ (public + members-only for active members)
+  - Dashboard quick link updated to /member/events
+  - Backend visibility filtering tests already exist in test_events.py (member sees public+members-only, public sees only public)
+  - Key decision: all upcoming events fetched once at load; month filtering done client-side (avoids re-fetching per month navigation)
+  - Key decision: calendar view hidden on mobile (sm:hidden), replaced by agenda-style list for usability
+---
+

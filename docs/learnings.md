@@ -51,6 +51,13 @@ Captured during implementation — insights, gotchas, and ideas for future work.
 - **Stripe connection status is a placeholder**: `stripe_connected` always returns `False` until Stripe Connect (#8) is implemented. The field is included in the API response now so the frontend shape is established.
 - **PlatformAdmin bootstrap**: There's no in-app way to create the very first PlatformAdmin (a chicken-and-egg problem — all create endpoints require an existing PlatformAdmin token). In production, use a Django management command to bootstrap the first account.
 
+## Event Calendar View
+
+- **All events fetched once, filtered client-side**: Rather than fetching events per-month via the API, all upcoming events are fetched at page load and the calendar/list component filters them by selected month in JavaScript. This avoids N API calls when navigating months, at the cost of loading all events upfront. Acceptable for clubs with up to ~hundreds of events; for large datasets, consider lazy loading per-month.
+- **Calendar grid is Mon-first**: Week starts Monday to match UK/European convention. Day offset calculation: `(firstDay + 6) % 7` converts JS Sunday=0 system to Mon=0.
+- **Mobile calendar → agenda**: On small screens, the grid (7 columns of tiny cells) is unusable. The calendar grid is hidden below `sm` breakpoint (`sm:hidden`) and replaced by a simple agenda list of events in the current month.
+- **Server/client split for public events page**: The public `/events` page remains a server component (for SSR/SEO) but renders `EventCalendarList` as a client component. Next.js supports this — server components can render client components as children.
+
 ## Recurring Events
 
 - **EventSeries as a lightweight parent**: The series model holds only `title`, `recurrence_pattern`, and `created_by`. All event-specific data (description, location, visibility, etc.) is duplicated across occurrences at generation time. This means editing the "series" data doesn't retroactively update all occurrences — each occurrence is fully independent after creation. This is the desired behaviour (edit one → don't affect others).
