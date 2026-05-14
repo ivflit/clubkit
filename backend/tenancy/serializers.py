@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django_tenants.utils import tenant_context
 from rest_framework import serializers
 
-from tenancy.models import BrandKit, Tenant, TenantDomain, validate_subdomain_slug
+from tenancy.models import BrandKit, PlatformAdmin, Tenant, TenantDomain, validate_subdomain_slug
 
 
 class BrandKitSerializer(serializers.ModelSerializer):
@@ -130,3 +130,55 @@ class TenantDetailSerializer(serializers.ModelSerializer):
         model = Tenant
         fields = ["id", "name", "slug", "status", "created_at", "brand_kit"]
         read_only_fields = fields
+
+
+# --- Platform Admin serializers ---
+
+
+class PlatformAdminLoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+
+class TenantListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tenant
+        fields = ["id", "name", "slug", "status", "plan", "created_at"]
+        read_only_fields = fields
+
+
+class TenantAdminDetailSerializer(serializers.ModelSerializer):
+    member_count = serializers.IntegerField(read_only=True)
+    active_memberships = serializers.IntegerField(read_only=True)
+    stripe_connected = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = Tenant
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "status",
+            "plan",
+            "created_at",
+            "member_count",
+            "active_memberships",
+            "stripe_connected",
+        ]
+        read_only_fields = fields
+
+
+class PlatformAdminCreateSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True, min_length=8)
+
+    def validate_email(self, value):
+        if PlatformAdmin.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError("A Platform Admin with this email already exists.")
+        return value.lower()
+
+    def create(self, validated_data):
+        admin = PlatformAdmin(email=validated_data["email"])
+        admin.set_password(validated_data["password"])
+        admin.save()
+        return admin

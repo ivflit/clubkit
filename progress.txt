@@ -108,6 +108,32 @@ Summary: Implemented EventRegistration model, API endpoints, and frontend UI.
 ---
 
 ---
+Date: 2026-05-15
+Issue: #16 - Platform Admin dashboard
+Commit: TBD
+Summary: Implemented Platform Admin dashboard with cross-schema querying and JWT auth.
+  - PlatformAdmin model in public schema (tenancy app/SHARED_APPS): email, hashed password, is_active
+  - plan field added to Tenant model (free/pro choices, defaults to free)
+  - Migration 0003: adds plan field to Tenant + creates PlatformAdmin table
+  - Custom JWT flow: AccessToken with platform_admin_id claim, PlatformAdminAuthentication class
+  - IsPlatformAdmin permission: checks isinstance(request.user, PlatformAdmin)
+  - API endpoints (all in urls_public.py — public schema only):
+    - POST /api/platform-admin/login/ — issues JWT for PlatformAdmin
+    - GET /api/platform-admin/tenants/ — list all tenants (excludes public schema)
+    - GET /api/platform-admin/tenants/<id>/ — tenant detail with cross-schema member/membership counts
+    - GET /api/platform-admin/stats/ — aggregate stats across all tenant schemas
+    - POST /api/platform-admin/admins/ — create additional Platform Admin accounts
+  - Cross-schema queries use django_tenants schema_context() to iterate tenant schemas
+  - stripe_connected placeholder returns False (awaiting Stripe Connect issue #8)
+  - ~27 tests: model password hashing, login success/failure/inactive, permission enforcement,
+    tenant listing, tenant detail with cross-schema stats, aggregate stats
+  - Frontend: /platform-admin/login, /platform-admin (dashboard), /platform-admin/tenants/[id]
+  - Key decision: Platform Admin JWT uses platform_admin_id claim (not user_id) to avoid
+    conflating with tenant user tokens; separate auth class handles token resolution
+  - Key decision: Tenant listing excludes public schema row (platform-level artifact)
+---
+
+---
 Date: 2026-05-14
 Issue: #5 - Public club site with Brand Kit theming
 Commit: 6928abd

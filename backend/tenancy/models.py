@@ -1,5 +1,6 @@
 import re
 
+from django.contrib.auth.hashers import check_password, make_password
 from django.core.exceptions import ValidationError
 from django.db import models
 from django_tenants.models import TenantMixin, DomainMixin
@@ -18,6 +19,11 @@ def validate_subdomain_slug(value):
 
 
 class Tenant(TenantMixin):
+    PLAN_CHOICES = [
+        ("free", "Free"),
+        ("pro", "Pro"),
+    ]
+
     name = models.CharField(max_length=255)
     slug = models.SlugField(
         max_length=63, unique=True, validators=[validate_subdomain_slug]
@@ -30,6 +36,7 @@ class Tenant(TenantMixin):
         ],
         default="active",
     )
+    plan = models.CharField(max_length=20, choices=PLAN_CHOICES, default="free")
     created_at = models.DateTimeField(auto_now_add=True)
 
     auto_create_schema = True
@@ -63,3 +70,24 @@ class BrandKit(models.Model):
 
     def __str__(self):
         return f"BrandKit for {self.tenant.name}"
+
+
+class PlatformAdmin(models.Model):
+    """Super-admin account scoped to the public schema, not any Tenant."""
+
+    email = models.EmailField(unique=True)
+    password = models.CharField(max_length=128)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "tenancy"
+
+    def __str__(self):
+        return self.email
+
+    def set_password(self, raw_password: str) -> None:
+        self.password = make_password(raw_password)
+
+    def check_password(self, raw_password: str) -> bool:
+        return check_password(raw_password, self.password)

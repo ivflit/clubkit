@@ -44,6 +44,13 @@ Captured during implementation — insights, gotchas, and ideas for future work.
 - **Next.js fetch deduplication**: When the same URL is fetched multiple times within one server render (e.g. brand kit in root layout + brand kit in page), Next.js automatically deduplicates the underlying fetch calls. No explicit cache layer is needed for this pattern.
 - **Mobile nav**: The current PublicHeader doesn't collapse to a hamburger menu on small screens. A mobile-friendly nav (e.g. hidden menu toggle) would improve the experience on phones. Acceptable for v1 given fixed nav links fit in a single row, but should be addressed before launch.
 
+## Platform Admin
+
+- **Separate JWT flow for Platform Admins**: Platform Admin tokens are standard `AccessToken` objects (from simplejwt) but carry a custom `platform_admin_id` claim instead of `user_id`. A custom `PlatformAdminAuthentication` class decodes the token, checks for this claim, and resolves the `PlatformAdmin` instance. Views set `authentication_classes = [PlatformAdminAuthentication]` to opt into this flow — tenant endpoints are unaffected.
+- **Cross-schema stats are sequential, not parallel**: Aggregating stats across tenant schemas iterates all tenants and runs a `schema_context(...)` query per tenant. This is O(n) database round-trips and will be slow at scale. For production, consider materialised views, caching, or a background job that pre-computes stats.
+- **Stripe connection status is a placeholder**: `stripe_connected` always returns `False` until Stripe Connect (#8) is implemented. The field is included in the API response now so the frontend shape is established.
+- **PlatformAdmin bootstrap**: There's no in-app way to create the very first PlatformAdmin (a chicken-and-egg problem — all create endpoints require an existing PlatformAdmin token). In production, use a Django management command to bootstrap the first account.
+
 ## Technical Debt
 
 - BrandKit uses `FileField` (not `ImageField`) to avoid requiring Pillow as a dependency. This means uploaded files are not validated as images at the Django level.
