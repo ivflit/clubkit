@@ -174,7 +174,7 @@ Summary: Implemented member dashboard with active memberships and upcoming event
 ---
 Date: 2026-05-15
 Issue: #12 - Recurring Events
-Commit: TBD
+Commit: 4b7c768
 Summary: Implemented EventSeries model, occurrence generation, and series cancel API.
   - EventSeries model in events app: title, recurrence_pattern (weekly/fortnightly), created_by FK
   - series FK added to Event model (nullable, SET_NULL) — non-recurring events unaffected
