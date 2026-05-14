@@ -1,12 +1,15 @@
+from django.utils import timezone
 from rest_framework import generics, status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Event, EventRegistration
+from .models import Event, EventRegistration, EventSeries
 from .serializers import (
     EventRegistrationSerializer,
     EventSerializer,
+    EventSeriesCreateSerializer,
+    EventSeriesSerializer,
     PublicEventSerializer,
 )
 
@@ -232,4 +235,54 @@ class MyRegisteredEventsView(generics.ListAPIView):
         return (
             EventRegistration.objects.filter(user=self.request.user)
             .select_related("event", "user")
+        )
+
+
+# ── Series views ─────────────────────────────────────────────────
+
+
+class AdminEventSeriesListCreateView(generics.GenericAPIView):
+    """Admin: list all Event series or create a new recurring series with occurrences."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not request.user.is_tenant_admin:
+            raise PermissionDenied("Only Admins can view series.")
+        series = EventSeries.objects.all()
+        return Response(EventSeriesSerializer(series, many=True).data)
+
+    def post(self, request):
+        if not request.user.is_tenant_admin:
+            raise PermissionDenied("Only Admins can create recurring Events.")
+        serializer = EventSeriesCreateSerializer(
+            data=request.data, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+        series = serializer.save()
+        return Response(
+            EventSeriesSerializer(series).data, status=status.HTTP_201_CREATED
+        )
+
+
+class AdminEventSeriesCancelView(generics.GenericAPIView):
+    """Admin: cancel all future occurrences of a series."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        if not request.user.is_tenant_admin:
+            raise PermissionDenied("Only Admins can cancel series.")
+        try:
+            series = EventSeries.objects.get(pk=pk)
+        except EventSeries.DoesNotExist:
+            return Response(
+                {"detail": "Series not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+        now = timezone.now()
+        cancelled_count = series.occurrences.filter(
+            status="upcoming", date_time__gte=now
+        ).update(status="cancelled")
+        return Response(
+            {"detail": f"Cancelled {cancelled_count} upcoming occurrences."}
         )

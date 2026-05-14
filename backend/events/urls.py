@@ -5,6 +5,8 @@ from .views import (
     AdminEventDetailView,
     AdminEventListCreateView,
     AdminEventRegistrationsView,
+    AdminEventSeriesCancelView,
+    AdminEventSeriesListCreateView,
     EventCancelRegistrationView,
     EventDetailView,
     EventRegisterView,
@@ -19,6 +21,9 @@ urlpatterns = [
     path("<int:pk>/", AdminEventDetailView.as_view(), name="admin-event-detail"),
     path("<int:pk>/cancel/", AdminEventCancelView.as_view(), name="admin-event-cancel"),
     path("<int:pk>/registrations/", AdminEventRegistrationsView.as_view(), name="admin-event-registrations"),
+    # Admin Series
+    path("series/", AdminEventSeriesListCreateView.as_view(), name="admin-event-series"),
+    path("series/<int:pk>/cancel/", AdminEventSeriesCancelView.as_view(), name="admin-event-series-cancel"),
     # Public
     path("public/", PublicEventListView.as_view(), name="public-event-list"),
     path("detail/<int:pk>/", EventDetailView.as_view(), name="event-detail"),

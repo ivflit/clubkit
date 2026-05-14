@@ -171,3 +171,23 @@ Summary: Implemented member dashboard with active memberships and upcoming event
   - Key decision: filter on both event status and date_time >= now to exclude stale 'upcoming' events with past dates
 ---
 
+---
+Date: 2026-05-15
+Issue: #12 - Recurring Events
+Commit: TBD
+Summary: Implemented EventSeries model, occurrence generation, and series cancel API.
+  - EventSeries model in events app: title, recurrence_pattern (weekly/fortnightly), created_by FK
+  - series FK added to Event model (nullable, SET_NULL) — non-recurring events unaffected
+  - Migration 0003: creates EventSeries table and adds series FK to Event
+  - POST /api/events/series/ — admin-only: creates series + bulk_creates occurrences
+  - GET /api/events/series/ — admin-only: lists all series with occurrence count
+  - POST /api/events/series/{id}/cancel/ — cancels all future upcoming occurrences
+  - Individual occurrence editing/cancelling unchanged (existing event CRUD endpoints)
+  - EventSerializer extended with series_id and series_title (read-only, nullable)
+  - Admin events UI updated: "+ Recurring" button, recurring creation form, series summary panel
+  - Events table shows "Part of: [series title]" for recurring events
+  - 9 backend tests: weekly generation count, fortnightly generation, auth/permission checks, independent edit, sibling isolation, series cancel, series cancel permissions, serializer fields, list series
+  - Key decision: occurrences generated at creation time via bulk_create — no live recurrence rule stored
+  - Key decision: series cancel filters date_time >= now so past occurrences are preserved
+---
+

@@ -2,6 +2,32 @@ from django.conf import settings
 from django.db import models
 
 
+class EventSeries(models.Model):
+    """A recurring series that generates individual Event occurrences."""
+
+    RECURRENCE_CHOICES = [
+        ("weekly", "Weekly"),
+        ("fortnightly", "Fortnightly"),
+    ]
+
+    title = models.CharField(max_length=255)
+    recurrence_pattern = models.CharField(max_length=15, choices=RECURRENCE_CHOICES)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="created_series",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name_plural = "event series"
+
+    def __str__(self):
+        return self.title
+
+
 class Event(models.Model):
     VISIBILITY_CHOICES = [
         ("public", "Public"),
@@ -24,6 +50,13 @@ class Event(models.Model):
     capacity = models.PositiveIntegerField(null=True, blank=True)
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default="upcoming"
+    )
+    series = models.ForeignKey(
+        EventSeries,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="occurrences",
     )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,

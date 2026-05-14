@@ -51,6 +51,13 @@ Captured during implementation — insights, gotchas, and ideas for future work.
 - **Stripe connection status is a placeholder**: `stripe_connected` always returns `False` until Stripe Connect (#8) is implemented. The field is included in the API response now so the frontend shape is established.
 - **PlatformAdmin bootstrap**: There's no in-app way to create the very first PlatformAdmin (a chicken-and-egg problem — all create endpoints require an existing PlatformAdmin token). In production, use a Django management command to bootstrap the first account.
 
+## Recurring Events
+
+- **EventSeries as a lightweight parent**: The series model holds only `title`, `recurrence_pattern`, and `created_by`. All event-specific data (description, location, visibility, etc.) is duplicated across occurrences at generation time. This means editing the "series" data doesn't retroactively update all occurrences — each occurrence is fully independent after creation. This is the desired behaviour (edit one → don't affect others).
+- **`bulk_create` for occurrence generation**: Using `Event.objects.bulk_create(events)` generates all occurrences in a single SQL statement instead of N inserts. For large recurrence ranges (e.g. weekly for 2 years = 104 events), this is meaningfully faster.
+- **Series cancel only affects future occurrences**: The series cancel endpoint filters `date_time__gte=now()` so past occurrences are not touched — this is intentional, matching the acceptance criterion "cancel all future occurrences".
+- **No occurrence limit enforced**: The API doesn't cap the number of occurrences that can be generated. A malicious admin could set a 100-year weekly series = 5200 events. For production, consider enforcing a max occurrence count (e.g. 52 weeks = 1 year).
+
 ## Member Dashboard
 
 - **Dashboard aggregates across apps**: The dashboard view imports `Membership` from `memberships` and `EventRegistration` from `events` inside the method body to avoid circular imports at module level in `users/views.py`.
