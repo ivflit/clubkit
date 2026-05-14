@@ -110,7 +110,7 @@ Summary: Implemented EventRegistration model, API endpoints, and frontend UI.
 ---
 Date: 2026-05-15
 Issue: #16 - Platform Admin dashboard
-Commit: TBD
+Commit: 034ab92
 Summary: Implemented Platform Admin dashboard with cross-schema querying and JWT auth.
   - PlatformAdmin model in public schema (tenancy app/SHARED_APPS): email, hashed password, is_active
   - plan field added to Tenant model (free/pro choices, defaults to free)
