@@ -24,6 +24,7 @@ class MembershipType(models.Model):
     )
     renewal_mode = models.CharField(max_length=10, choices=RENEWAL_MODE_CHOICES)
     is_active = models.BooleanField(default=True)
+    stripe_price_id = models.CharField(max_length=255, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

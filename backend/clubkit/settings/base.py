@@ -1,6 +1,10 @@
+import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = "django-insecure-dev-only-change-in-production"
 
@@ -27,6 +31,7 @@ TENANT_APPS = [
     "users",
     "memberships",
     "events",
+    "payments",
 ]
 
 INSTALLED_APPS = list(SHARED_APPS) + [
@@ -143,6 +148,20 @@ DEFAULT_FROM_EMAIL = "noreply@clubkit.com"
 
 # Set to False in tests to send emails synchronously (avoids thread/outbox race condition).
 NOTIFICATIONS_SEND_ASYNC = True
+
+# --- Stripe ---
+
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
+STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
+STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+STRIPE_CONNECT_RETURN_URL = os.environ.get("STRIPE_CONNECT_RETURN_URL", "http://localhost:3000/admin/stripe/return")
+STRIPE_CONNECT_REFRESH_URL = os.environ.get("STRIPE_CONNECT_REFRESH_URL", "http://localhost:3000/admin/stripe/refresh")
+
+# Platform plan limits
+PLAN_LIMITS = {
+    "free": {"max_members": 50},
+    "pro": {"max_members": None},  # unlimited
+}
 
 # --- Misc ---
 

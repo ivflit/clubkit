@@ -37,6 +37,7 @@ class Tenant(TenantMixin):
         default="active",
     )
     plan = models.CharField(max_length=20, choices=PLAN_CHOICES, default="free")
+    stripe_account_id = models.CharField(max_length=255, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
 
     auto_create_schema = True

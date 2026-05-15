@@ -88,12 +88,32 @@ class PublicMembershipTypeListView(generics.ListAPIView):
 
 
 class MembershipPurchaseView(generics.CreateAPIView):
-    """Authenticated User purchases a Membership."""
+    """
+    Authenticated User purchases a Membership (free/direct path, no Stripe).
+    If the Tenant has Stripe connected, use the /api/payments/checkout/ endpoint instead.
+    Enforces plan member limits.
+    """
 
     serializer_class = MembershipPurchaseSerializer
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
+        from django.conf import settings as django_settings
+        from django_tenants.utils import schema_context
+
+        tenant = request.tenant
+        plan = tenant.plan
+        limits = django_settings.PLAN_LIMITS.get(plan, {})
+        max_members = limits.get("max_members")
+
+        if max_members is not None:
+            active_count = Membership.objects.filter(status="active").count()
+            if active_count >= max_members:
+                return Response(
+                    {"detail": f"This club has reached the {plan} plan limit of {max_members} active members. Please ask the admin to upgrade."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         membership = serializer.save()
