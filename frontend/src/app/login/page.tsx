@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { login, AuthError } from "@/lib/auth";
 import { useBrandKit } from "@/hooks/useBrandKit";
+import { getSubdomain } from "@/lib/tenant";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -14,15 +15,38 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [btnHover, setBtnHover] = useState(false);
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    if (!subdomain) return;
+  async function quickLogin(quickEmail: string, quickPassword: string) {
+    const sub = subdomain ?? getSubdomain(window.location.hostname);
+    if (!sub) { setError("Could not detect club subdomain."); return; }
     setError("");
     setLoading(true);
     try {
-      await login(subdomain, email, password);
-      router.push("/");
+      const tokens = await login(sub, quickEmail, quickPassword);
+      console.log("[login] success, tokens:", tokens);
+      router.push("/dashboard");
+    } catch (err) {
+      console.error("[login] error:", err);
+      setError("Quick login failed. Check console.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    // Read subdomain synchronously at click time as a fallback
+    const sub = subdomain ?? getSubdomain(window.location.hostname);
+    if (!sub) {
+      setError("Could not detect club subdomain. Check the URL.");
+      return;
+    }
+    setError("");
+    setLoading(true);
+    try {
+      await login(sub, email, password);
+      router.push("/dashboard");
     } catch (err) {
       if (err instanceof AuthError) {
         setError(
@@ -30,6 +54,8 @@ export default function LoginPage() {
             ? err.data.detail
             : "Invalid email or password.",
         );
+      } else if (err instanceof TypeError && (err as TypeError).message.includes("fetch")) {
+        setError("Cannot reach the server. Is the backend running on port 8000?");
       } else {
         setError("Something went wrong. Please try again.");
       }
@@ -39,6 +65,7 @@ export default function LoginPage() {
   }
 
   const primaryColour = brandKit?.primary_colour ?? "#1a73e8";
+  const btnBg = btnHover ? `${primaryColour}cc` : primaryColour;
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-6 py-12">
@@ -53,6 +80,28 @@ export default function LoginPage() {
         <h1 className="text-2xl font-bold text-center mb-8" style={{ color: primaryColour }}>
           Log in
         </h1>
+
+        {/* Dev quick-login buttons */}
+        <div className="mb-6 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <p className="text-xs font-medium text-amber-700 mb-2">Dev shortcuts</p>
+          <div className="flex gap-2 flex-wrap">
+            {[
+              { label: "Admin", email: "admin@demo.com", password: "Admin123!" },
+              { label: "Alice (member)", email: "alice@demo.com", password: "Member123!" },
+              { label: "Carol (guest)", email: "carol@demo.com", password: "Member123!" },
+            ].map(({ label, email: e, password: p }) => (
+              <button
+                key={e}
+                type="button"
+                disabled={loading}
+                onClick={() => quickLogin(e, p)}
+                className="px-3 py-1 text-xs rounded border border-amber-300 bg-white text-amber-800 hover:bg-amber-100 cursor-pointer disabled:opacity-50"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4 text-sm">
@@ -94,8 +143,10 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-            style={{ backgroundColor: primaryColour }}
+            onMouseEnter={() => setBtnHover(true)}
+            onMouseLeave={() => setBtnHover(false)}
+            className="w-full rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-50 transition-opacity cursor-pointer"
+            style={{ backgroundColor: btnBg }}
           >
             {loading ? "Logging in..." : "Log in"}
           </button>

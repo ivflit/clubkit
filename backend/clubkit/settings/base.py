@@ -23,6 +23,7 @@ SHARED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.staticfiles",
+    "corsheaders",
 ]
 
 TENANT_APPS = [
@@ -61,6 +62,7 @@ DATABASE_ROUTERS = ("django_tenants.routers.TenantSyncRouter",)
 
 MIDDLEWARE = [
     "django_tenants.middleware.main.TenantMainMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -148,6 +150,15 @@ DEFAULT_FROM_EMAIL = "noreply@clubkit.com"
 
 # Set to False in tests to send emails synchronously (avoids thread/outbox race condition).
 NOTIFICATIONS_SEND_ASYNC = True
+
+# --- CORS ---
+
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://.*\.lvh\.me(:\d+)?$",
+    r"^http://localhost(:\d+)?$",
+    r"^http://127\.0\.0\.1(:\d+)?$",
+]
+CORS_ALLOW_CREDENTIALS = True
 
 # --- Stripe ---
 

@@ -7,7 +7,7 @@ import { getApiBase } from "./lib/api";
  * Validates the tenant exists via the Django API and redirects to a "club not
  * found" page if it doesn't. Sets x-subdomain header for Server Components.
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const hostname = request.headers.get("host") ?? "";
   const subdomain = getSubdomain(hostname);
 
